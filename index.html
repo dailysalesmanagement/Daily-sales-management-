@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Sales Management</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    form, table {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+    table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .download-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Daily Sales Management</h1>
+
+  <form id="salesForm">
+    <label>Date:</label>
+    <input type="date" id="date" required>
+
+    <label>Customer Details:</label>
+    <input type="text" id="name" placeholder="Name" required>
+    <input type="text" id="address" placeholder="Home Address" required>
+    <input type="text" id="landmark" placeholder="Landmark">
+    <input type="text" id="city" placeholder="City" required>
+    <input type="text" id="state" placeholder="State" required>
+    <input type="text" id="pin" placeholder="Pin Code" required>
+    <input type="tel" id="phone" placeholder="Phone Number" required>
+
+    <label>Product:</label>
+    <input type="text" id="product" placeholder="Product Name" required>
+    <input type="number" id="quantity" placeholder="Quantity" required>
+    <input type="number" id="price" placeholder="Price per item" required>
+
+    <button type="submit">Add Sale</button>
+  </form>
+
+  <table id="salesTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>City</th>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="download-buttons">
+    <button onclick="downloadExcel()">Download as Excel</button>
+    <button onclick="window.print()">Download as PDF</button>
+  </div>
+
+  <script>
+    let salesData = JSON.parse(localStorage.getItem("salesData")) || [];
+
+    const form = document.getElementById("salesForm");
+    const tableBody = document.querySelector("#salesTable tbody");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const date = document.getElementById("date").value;
+      const name = document.getElementById("name").value;
+      const address = document.getElementById("address").value;
+      const landmark = document.getElementById("landmark").value;
+      const city = document.getElementById("city").value;
+      const state = document.getElementById("state").value;
+      const pin = document.getElementById("pin").value;
+      const phone = document.getElementById("phone").value;
+      const product = document.getElementById("product").value;
+      const quantity = parseInt(document.getElementById("quantity").value);
+      const price = parseFloat(document.getElementById("price").value);
+      const total = quantity * price;
+
+      const entry = { date, name, address, landmark, city, state, pin, phone, product, quantity, price, total };
+      salesData.push(entry);
+      localStorage.setItem("salesData", JSON.stringify(salesData));
+      displaySales();
+      form.reset();
+    });
+
+    function displaySales() {
+      tableBody.innerHTML = "";
+      salesData.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.date}</td>
+          <td>${item.name}</td>
+          <td>${item.city}</td>
+          <td>${item.product}</td>
+          <td>${item.quantity}</td>
+          <td>${item.price}</td>
+          <td>${item.total.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function downloadExcel() {
+      const ws = XLSX.utils.json_to_sheet(salesData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Sales");
+      XLSX.writeFile(wb, "Daily_Sales.xlsx");
+    }
+
+    displaySales();
+  </script>
+</body>
+</html>
